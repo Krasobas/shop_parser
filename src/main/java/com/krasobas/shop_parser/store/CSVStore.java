@@ -29,6 +29,7 @@ public class CSVStore implements Store {
         }
     }
 
+    @Override
     public List<Product> getList(Properties config) {
         List<Product> list = Collections.emptyList();
         try (Reader reader = Files.newBufferedReader(Paths.get(config.getProperty("app.store.csv")))) {

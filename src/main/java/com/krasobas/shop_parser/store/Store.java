@@ -7,4 +7,6 @@ import java.util.Properties;
 
 public interface Store {
     void store(List<Product> products, Properties config);
+
+    List<Product> getList(Properties config);
 }

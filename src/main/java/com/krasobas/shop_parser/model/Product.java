@@ -1,22 +1,15 @@
 package com.krasobas.shop_parser.model;
 
-import com.opencsv.bean.CsvBindByName;
 import java.util.Objects;
 
 public class Product {
     private static int ID_GENERATOR = 0;
 
-//    @CsvBindByName(column = "id")
     private int id;
-//    @CsvBindByName(column = "title")
     private String title;
-//    @CsvBindByName(column = "price")
     private String price;
-//    @CsvBindByName(column = "link")
     private String link;
-//    @CsvBindByName(column = "description")
     private String description;
-//    @CsvBindByName(column = "info")
     private String info;
 
     public Product(int id, String title, String price, String link, String description, String info) {
