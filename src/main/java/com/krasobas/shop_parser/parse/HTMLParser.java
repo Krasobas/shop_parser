@@ -5,6 +5,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,70 +18,85 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class HTMLParser implements Parser {
-    private Properties productConfig;
+    private Properties config;
+    private String url;
+    private List<Product> products;
 
-    public HTMLParser(Properties productConfig) {
-        this.productConfig = productConfig;
+    public HTMLParser(Properties productConfig, String url) {
+        this.config = productConfig;
+        this.url = url;
     }
 
     @Override
     public List<Product> parse() {
-        List<Product> products = new ArrayList<>();
-        Connection connection = Jsoup.connect(productConfig.getProperty("app.url"));
-        Predicate<Element> filter = element -> !element.select(productConfig.getProperty("product.link"))
-                .first()
-                .attr("href").
-                isEmpty();
+        if (products == null) {
+            products = new ArrayList<>();
+        }
+        Connection connection = Jsoup.connect(url);
         try {
             Document document = connection.get();
-            document.select(productConfig.getProperty("product.element"))
-                    .stream()
-                    .filter(filter)
-                    .forEach(element -> products.add(createProduct(element)));
+            Elements gallery = document.select(config.getProperty("product.element"));
+            if (!gallery.isEmpty()) {
+                parseGallery(gallery);
+            } else {
+                Product product = new Product(url);
+                products.add(parseProductPage(product));
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
         return products;
     }
 
-    private Product createProduct(Element element) {
-        Product product = new Product();
-        Element title = element.select(productConfig.getProperty("product.title")).first();
-        product.setTitle(title.text());
-        Element price = element.select(productConfig.getProperty("product.price")).first();
-        product.setPrice(price.text());
-        String link = element.select(productConfig.getProperty("product.link"))
+    private void parseGallery(Elements gallery) {
+        Predicate<Element> filter = element -> !element.select(config.getProperty("product.link"))
                 .first()
-                .attr("href");
-        if (link.startsWith("/")) {
-            link = getDomain().concat(link);
-        }
-        product.setLink(link);
-        parseProductPage(product);
-        return product;
+                .attr("href").
+                isEmpty();
+        gallery.stream()
+                .filter(filter)
+                .forEach(element -> {
+                    Product product = new Product(getProductLink(element));
+                    products.add(parseProductPage(product));
+                });
     }
 
-    private void parseProductPage(Product product) {
+    private Product parseProductPage(Product product) {
         Connection connection = Jsoup.connect(product.getLink());
         try {
             Document productPage = connection.get();
-            product.setDescription(getProductDescription(productPage));
-            if (!(productConfig.getProperty("product.info") == null)
-                    && !productConfig.getProperty("product.info").isEmpty()) {
+            product.setTitle(getProductField(productPage, config.getProperty("product.title")));
+            product.setPrice(getProductField(productPage, config.getProperty("product.price")));
+            product.setDescription(getProductField(productPage, config.getProperty("product.description")));
+            product.setImages(getProductImages(productPage));
+            if (!(config.getProperty("product.info") == null)
+                    && !config.getProperty("product.info").isEmpty()) {
                 product.setInfo(getProductInfo(productPage));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return product;
     }
 
-    private String getProductDescription(Document document) {
-        return Objects.requireNonNull(document.select(productConfig.getProperty("product.description"))
+    private String getProductField(Document productPage, String cssQuery) {
+        return Objects.requireNonNull(productPage.select(cssQuery)
                 .first()).text();
     }
 
-    private String getProductInfo(Document document) {
-        return Objects.requireNonNull(document.select(productConfig.getProperty("product.info"))
+    private String getProductLink(Element element) {
+        String link = element.select(config.getProperty("product.link"))
+                .first()
+                .attr("href");
+        if (link.startsWith("/")) {
+            link = getDomain().concat(link);
+        }
+        return link;
+    }
+
+    private String getProductInfo(Document productPage) {
+        return Objects.requireNonNull(productPage.select(config.getProperty("product.info"))
                         .first())
                 .children()
                 .stream()
@@ -88,13 +104,79 @@ public class HTMLParser implements Parser {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
+    private List<String> getProductImages(Document productPage) {
+        List<String> images = new ArrayList<>();
+        StringBuilder src = new StringBuilder();
+        productPage.select(config.getProperty("product.images")).forEach(
+                img -> {
+                    /**
+                     * TODO: check with all sites and refactor
+                     */
+                    String link = img.attr(config.getProperty("product.images.attr"));
+                    if (link.startsWith("//")) {
+                        src.append("https:");
+                    } else {
+                        src.append(getDomain());
+                    }
+                    if ("true".equals(config.getProperty("product.images.carousel"))) {
+                        src.append(setImgSize(img.attr(config.getProperty("product.images.attr"))));
+                    } else {
+                        src.append(img.attr(config.getProperty("product.images.attr")));
+                    }
+                    images.add(src.toString());
+                    src.setLength(0);
+                });
+        if (images.isEmpty()) {
+            images.add("There is no any image.");
+        }
+        return images;
+    }
+
+    private String setImgSize(String img) {
+        Pattern pattern = Pattern.compile(config.getProperty("product.images.pattern"));
+        Matcher matcher = pattern.matcher(img);
+        String[] groups = config.getProperty("product.images.groups").split(":");
+        StringBuilder rsl = new StringBuilder();
+        if (matcher.find()) {
+            rsl.append(matcher.group(Integer.parseInt(groups[0])))
+                    .append(config.getProperty("product.images.size"))
+                    .append(matcher.group(Integer.parseInt(groups[1])));
+
+        }
+        return rsl.toString();
+    }
+
     private String getDomain() {
         String domain = "";
         Pattern pattern = Pattern.compile("((http[s]?|ftp)://)([^:^/]*)");
-        Matcher matcher = pattern.matcher(productConfig.getProperty("app.url"));
+        Matcher matcher = pattern.matcher(url);
         if (matcher.find()) {
             domain = matcher.group();
         }
         return domain;
+    }
+
+    public Properties getConfig() {
+        return config;
+    }
+
+    public void setConfig(Properties config) {
+        this.config = config;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 }

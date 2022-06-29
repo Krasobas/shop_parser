@@ -5,6 +5,7 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.*;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import org.apache.commons.collections4.comparators.FixedOrderComparator;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,6 +24,8 @@ public class CSVStore implements Store {
                     .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
                     .withMappingStrategy(getStrategy())
                     .build();
+//            .withMappingStrategy(getStrategy())
+
             sbc.write(products);
         } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
             e.printStackTrace();
@@ -37,6 +40,7 @@ public class CSVStore implements Store {
                     .withType(Product.class)
                     .withMappingStrategy(getStrategy())
                     .build();
+//            .withMappingStrategy(getStrategy())
             list = csv.parse();
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,11 +48,15 @@ public class CSVStore implements Store {
         return list;
     }
 
-    private ColumnPositionMappingStrategy<Product> getStrategy() {
-        String[] columns = new String[] {"id", "title", "price", "link", "description", "info"};
-        ColumnPositionMappingStrategy<Product> strategy = new ColumnPositionMappingStrategy<>();
+    private HeaderColumnNameMappingStrategy<Product> getStrategy() {
+        String[] columns = new String[] {"ID", "TITLE", "PRICE", "LINK", "IMAGES", "DESCRIPTION", "INFO"};
+//        ColumnPositionMappingStrategy<Product> strategy = new ColumnPositionMappingStrategy<>();
+        HeaderColumnNameMappingStrategy<Product> strategy = new HeaderColumnNameMappingStrategy<>();
         strategy.setType(Product.class);
-        strategy.setColumnMapping(columns);
+        strategy.setColumnOrderOnWrite(new FixedOrderComparator<>(columns));
+
+//        strategy.setColumnMapping(columns);
+
         return strategy;
     }
 }
