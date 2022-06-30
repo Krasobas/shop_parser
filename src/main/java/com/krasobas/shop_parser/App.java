@@ -9,7 +9,6 @@ import com.krasobas.shop_parser.store.Store;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class App {
@@ -38,6 +37,7 @@ public class App {
             store.store(parser.getProducts(), config);
             parser.getProducts().clear();
         }
+        parser.close();
     }
 
     private Properties initConfig(String properties) {

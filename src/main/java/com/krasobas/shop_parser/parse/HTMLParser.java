@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class HTMLParser implements Parser {
     private Properties config;
     private String url;
+    private SeleniumParser selenium;
     private List<Product> products;
 
     public HTMLParser(Properties productConfig, String url) {
@@ -32,21 +33,35 @@ public class HTMLParser implements Parser {
         if (products == null) {
             products = new ArrayList<>();
         }
-        Connection connection = Jsoup.connect(url);
-        try {
-            Document document = connection.get();
-            Elements gallery = document.select(config.getProperty("product.element"));
-            if (!gallery.isEmpty()) {
-                parseGallery(gallery);
-            } else {
-                Product product = new Product(url);
-                products.add(parseProductPage(product));
+        if (config.containsKey("shop.type") && "dynamic".equals(config.getProperty("shop.type"))) {
+            if (selenium == null) {
+                selenium = new SeleniumParser();
             }
+            products.add(selenium.parseDynamicPage(config, url));
+        } else {
+            Connection connection = Jsoup.connect(url);
+            try {
+                Document document = connection.get();
+                Elements gallery = document.select(config.getProperty("product.element"));
+                if (!gallery.isEmpty()) {
+                    parseGallery(gallery);
+                } else {
+                    Product product = new Product(url);
+                    products.add(parseProductPage(product));
+                }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return products;
+    }
+
+    @Override
+    public void close() {
+        if (selenium != null) {
+            selenium.getDriver().close();
+        }
     }
 
     private void parseGallery(Elements gallery) {

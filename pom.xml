@@ -51,6 +51,18 @@
       <artifactId>jsoup</artifactId>
       <version>1.14.3</version>
     </dependency>
+    <!--selenium-java-->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>4.3.0</version>
+    </dependency>
+    <!--selenium-chrome-driver-->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-chrome-driver</artifactId>
+      <version>4.3.0</version>
+    </dependency>
     <!--opencsv-->
     <dependency>
       <groupId>com.opencsv</groupId>
