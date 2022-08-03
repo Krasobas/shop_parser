@@ -91,8 +91,8 @@ Finally, you need to indicate the path to a result file:
 
 ###Used technologies:
 
-- JSOUP – for static pages parsing
--  SELENIUM – for dynamic pages parsing
+- JSOUP – for static pages parsing 
+- SELENIUM – for dynamic pages parsing
 - PDFBOX – for PDF parsing
 - OPENCSV – for serialization Product objects to a CSV file.
 
