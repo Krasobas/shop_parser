@@ -22,11 +22,11 @@ The config file has a number of keys:
 - `app.url:` - the page with a list of products to parse
 - `app.store.csv:` - the path to a result CSV file
 
-####Dynamic page:
+#### Dynamic page:
 If you need to parse a dynamic page you have to add the key below:
 - `shop.type=dynamic`
 
-####The keys below are CSS queries:
+#### The keys below are CSS queries:
 
 - `product.element:` - ccs for product element on the page with product gallery
 - `product.title:`
@@ -38,7 +38,7 @@ If you need to parse a dynamic page you have to add the key below:
 You can add several css query using `;` delimiter if you need to concat some elements.
 For example: `product.price:.o-detail__purchase--prices .product-price .from;.amount;.price-middle`
 
-#####Dynamic field:
+##### Dynamic field:
 If you need to parse only some fields dynamically you should add these keys for each field:
 
 - `product.price.dynamic:true`
@@ -50,7 +50,7 @@ If you need to parse only some fields dynamically you should add these keys for 
 - `product.price.dynamic.price:` product filed to save
 - `product.price.dynamic.ignore:` text to ignore
 
-#####Images:
+##### Images:
 
 - `product.images:` - css query for image
 - `product.images.attr:` - attribute with image link
@@ -89,7 +89,7 @@ Finally, you need to indicate the path to a result file:
 - `app.store.csv:`
 </details>
 
-###Used technologies:
+### Used technologies:
 
 - JSOUP – for static pages parsing 
 - SELENIUM – for dynamic pages parsing
