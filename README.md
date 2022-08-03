@@ -6,7 +6,9 @@ The application can parse static and dynamic web pages as well as pdf catalogs.
 
 To run the application use the command below:
 
-`java -jar target/shop_parser.jar path` where `path` is directory with source files or a source file
+`java -jar target/shop_parser.jar path` where `path` is directory with source files or a source file.
+
+As a source file application can read `.txt` file with URLs or `.pdf` file.
 
 As result application return a CSV file for each source located in `shop_parser/results`.
 
