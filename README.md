@@ -1,29 +1,88 @@
 # shop_parser
 
-This project represent a configurable shop pages parser.
+This project represent a configurable product parser.
 
-To work with the application use the command below:
+The application can parse static and dynamic web pages as well as pdf catalogs.
 
-`java -jar target/shop_parser.jar pointedepenmarch.properties; open result.csv`
+To run the application use the command below:
 
+`java -jar target/shop_parser.jar path` where `path` is directory with source files or a source file
 
-- `pointedepenmarch.properties` - is a config file.
+As result application return a CSV file for each source located in `shop_parser/results`.
+
+To prepare the application for work user have to create a `.properties` config file for each source (website or pdf).
 
 The config file has a number of keys:
 
-REQUIRED:
+<details>
+  <summary>WEB</summary>
 
 - `app.url:` - the page with a list of products to parse
 - `app.store.csv:` - the path to a result CSV file
 
-The keys below are CSS queries for a product and its fields:
+####Dynamic page:
+If you need to parse a dynamic page you have to add the key below:
+- `shop.type=dynamic`
 
-- `product.element:`
+####The keys below are CSS queries:
+
+- `product.element:` - ccs for product element on the page with product gallery
 - `product.title:`
 - `product.link:`
 - `product.price:`
-- `product.description:`
+- `product.description:` - main description
+- `product.info:` - additional information
 
-OPTIONAL:
+You can add several css query using `;` delimiter if you need to concat some elements.
+For example: `product.price:.o-detail__purchase--prices .product-price .from;.amount;.price-middle`
 
-- `product.info:` 
+#####Dynamic field:
+If you need to parse only some fields dynamically you should add these keys for each field:
+
+- `product.price.dynamic:true`
+- `product.price.dynamic.check:` element to check if it is present on current page
+- `product.price.dynamic.button:` it will be clicked
+- `product.price.dynamic.option:` it will be also clicked
+- `product.price.dynamic.option.attr:` attribute to check if option is selected
+- `product.price.dynamic.option.value:` expected value
+- `product.price.dynamic.price:` product filed to save
+- `product.price.dynamic.ignore:` text to ignore
+
+#####Images:
+
+- `product.images:` - css query for image
+- `product.images.attr:` - attribute with image link
+- `product.images.carousel:`  if there is an image gallery `true`, otherwise `false`
+
+The keys below are required if `product.images.carousel` is `true` and you need to change the image size in the image link.
+
+- `product.images.size:` - new size
+- `product.images.pattern:` - pattern to split the image link on groups 
+- `product.images.groups:` - groups to save
+
+</details>
+<details>
+  <summary>PDF</summary> 
+The config file for pdf catalog has to have the keys below:
+
+- `pdf.header:` table header to delete where column titles are concat by `|`
+- `pdf.categories:` the same for categories if you need
+- `pdf.errors:` words to delete
+
+At first parser will get all pdf lines and delete header, categories and errors.
+Then it will split each line using these keys:
+
+- `product.title.start:`
+- `product.title.end:`
+- `product.origin.start:`
+- `product.origin.end:`
+- `product.description.start:`
+- `product.description.end:`
+- `product.info.start:`
+- `product.info.end:`
+- `product.price.start:`
+- `product.price.end:`
+
+Finally, you need to indicate the path to a result file:
+- `app.store.csv:`
+</details>

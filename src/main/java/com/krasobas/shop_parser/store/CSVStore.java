@@ -14,12 +14,19 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class CSVStore implements Store {
     @Override
     public void store(List<Product> products, Properties config) {
-        try (Writer writer = Files.newBufferedWriter(Paths.get(config.getProperty("app.store.csv")), StandardCharsets.UTF_8)) {
+        /**
+         * TODO: if user give some txt with the same shops
+         * result will be written below existing text but with reaping of header
+         * better is to create each time a new file for example with actual date and time
+         */
+        String path = config.getProperty("app.store.csv");
+        try (Writer writer = Files.newBufferedWriter(Paths.get(path), StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
             StatefulBeanToCsv<Product> sbc = new StatefulBeanToCsvBuilder<Product>(writer)
                     .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
                     .withMappingStrategy(getStrategy())
@@ -49,7 +56,7 @@ public class CSVStore implements Store {
     }
 
     private HeaderColumnNameMappingStrategy<Product> getStrategy() {
-        String[] columns = new String[] {"ID", "TITLE", "PRICE", "LINK", "IMAGES", "DESCRIPTION", "INFO"};
+        String[] columns = new String[] {"ID", "TITLE", "PRICE", "LINK", "IMAGES", "ORIGIN", "DESCRIPTION", "INFO"};
 //        ColumnPositionMappingStrategy<Product> strategy = new ColumnPositionMappingStrategy<>();
         HeaderColumnNameMappingStrategy<Product> strategy = new HeaderColumnNameMappingStrategy<>();
         strategy.setType(Product.class);

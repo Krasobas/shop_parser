@@ -5,6 +5,4 @@ import java.util.List;
 
 public interface Parser {
     List<Product> parse();
-
-    void close();
 }

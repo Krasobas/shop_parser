@@ -1,10 +1,12 @@
 package com.krasobas.shop_parser.loader;
 
+import org.openqa.selenium.json.JsonOutput;
+import org.postgresql.gss.GSSOutputStream;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.w3c.dom.ls.LSOutput;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -17,10 +19,8 @@ public class ShopsLoader {
     private Set<String> resources;
     private Map<String, Set<String>> shops;
 
-    public ShopsLoader(String path) {
-        initUrls(path);
+    public ShopsLoader() {
         initResources();
-        initShops();
     }
 
     private void initUrls(String path) {
@@ -34,8 +34,16 @@ public class ShopsLoader {
     }
 
     private void initResources() {
-        Reflections reflections = new Reflections("", new ResourcesScanner());
-        this.resources = reflections.getResources(Pattern.compile(".*\\.properties"));
+        this.resources = Arrays.stream(Objects.requireNonNull(new File("src/main/resources/shops").listFiles()))
+                .sequential()
+                .map (File::getName)
+                .filter(s -> s.endsWith(".properties"))
+                .collect(Collectors.toSet());
+        /**
+         * Reflections doesn't work after packaging
+         */
+//        Reflections reflections = new Reflections("", new ResourcesScanner());
+//        this.resources = reflections.getResources(Pattern.compile(".*\\.properties"));
     }
 
     private void initShops() {
@@ -48,6 +56,8 @@ public class ShopsLoader {
                 } else {
                     this.shops.get(properties).add(url);
                 }
+            } else {
+                System.out.printf("Please create %s file for url: %s%n", getPropertiesName(url), url);
             }
         });
     }
@@ -62,11 +72,21 @@ public class ShopsLoader {
         return properties.append(".properties").toString();
     }
 
-    public Map<String, Set<String>> getShops() {
+    public Map<String, Set<String>> getShops(String path) {
+        initUrls(path);
+        initShops();
         return shops;
     }
 
     public void setShops(Map<String, Set<String>> shops) {
         this.shops = shops;
+    }
+
+    public Set<String> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<String> resources) {
+        this.resources = resources;
     }
 }

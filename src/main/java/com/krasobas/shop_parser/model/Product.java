@@ -13,16 +13,18 @@ public class Product {
     private int id;
     @CsvBindByName(column = "title", required = true)
     private String title;
-    @CsvBindByName(column = "price", required = true)
+    @CsvBindByName(column = "price")
     private String price;
-    @CsvBindByName(column = "link", required = true)
+    @CsvBindByName(column = "link")
     private String link;
-    @CsvBindAndSplitByName(column = "images", required = true, elementType = String.class, splitOn = ",", writeDelimiter = "\r\n")
+    @CsvBindAndSplitByName(column = "images", elementType = String.class, splitOn = ",", writeDelimiter = "\r\n")
     private List<String> images;
-    @CsvBindByName(column = "description", required = true)
+    @CsvBindByName(column = "description")
     private String description;
     @CsvBindByName(column = "info")
     private String info;
+    @CsvBindByName(column = "origin")
+    private String origin;
 
     public Product() {
         this.id = ++ID_GENERATOR;
@@ -107,6 +109,14 @@ public class Product {
 
     public void setImages(List<String> images) {
         this.images = images;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
     }
 
     @Override
