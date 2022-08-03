@@ -88,3 +88,13 @@ Then it will split each line using these keys:
 Finally, you need to indicate the path to a result file:
 - `app.store.csv:`
 </details>
+
+###Used technologies:
+
+- JSOUP – for static pages parsing
+-  SELENIUM – for dynamic pages parsing
+- PDFBOX – for PDF parsing
+- OPENCSV – for serialization Product objects to a CSV file.
+
+
+
